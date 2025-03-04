@@ -16,10 +16,13 @@ app.secret_key = "WarrantyMe"
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 SCOPES = ['https://www.googleapis.com/auth/drive']
-SERVICE_ACCOUNT_FILE = 'service_account.json'
+# SERVICE_ACCOUNT_FILE = 'service_account.json'
+SERVICE_ACCOUNT_FILE=os.getenv("GOOGLE_CLIENT_ID")
 
-GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
-client_secrets_file = os.path.join(pathlib.Path(__file__).parent, "client_secret.json")
+GOOGLE_CLIENT_ID = os.getenv("SERVICE_ACCOUNT_JSON")
+
+# client_secrets_file = os.path.join(pathlib.Path(__file__).parent, "client_secret.json")
+client_secrets_file=os.getenv("GOOGLE_CLIENT_SECRET")
 
 flow = Flow.from_client_secrets_file(
     client_secrets_file=client_secrets_file,
