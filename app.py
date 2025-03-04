@@ -16,6 +16,7 @@ app.secret_key = "WarrantyMe"
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 SCOPES = ['https://www.googleapis.com/auth/drive']
+
 # SERVICE_ACCOUNT_FILE = 'service_account.json'
 SERVICE_ACCOUNT_FILE=os.getenv("GOOGLE_CLIENT_ID")
 
@@ -24,11 +25,25 @@ GOOGLE_CLIENT_ID = os.getenv("SERVICE_ACCOUNT_JSON")
 # client_secrets_file = os.path.join(pathlib.Path(__file__).parent, "client_secret.json")
 client_secrets_file=os.getenv("GOOGLE_CLIENT_SECRET")
 
-flow = Flow.from_client_secrets_file(
-    client_secrets_file=client_secrets_file,
-    scopes=["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email", "openid"],
-    redirect_uri="http://127.0.0.1:5000/callback"
-)
+REDIRECT_URI = os.getenv("REDIRECT_URI")
+
+def create_flow():
+    flow = Flow.from_client_config(
+        client_config={
+            "web": {
+                "client_id": GOOGLE_CLIENT_ID,
+                "client_secret": client_secrets_file,
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+                "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs"
+            }
+        },
+        scopes=["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email", "openid"],
+        redirect_uri=REDIRECT_URI
+    )
+    return flow
+
+flow = create_flow() #use the create_flow function.
 
 def login_is_required(function):
     def wrapper(*args, **kwargs):
