@@ -28,6 +28,8 @@ client_secrets_file=os.getenv("GOOGLE_CLIENT_SECRET")
 REDIRECT_URI = os.getenv("REDIRECT_URI")
 
 def create_flow():
+    print("GOOGLE_CLIENT_ID:", os.getenv("GOOGLE_CLIENT_ID"))
+    print("GOOGLE_CLIENT_SECRET:", os.getenv("GOOGLE_CLIENT_SECRET"))
     flow = Flow.from_client_config(
         client_config={
             "web": {
