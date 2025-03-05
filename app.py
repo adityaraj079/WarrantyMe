@@ -11,43 +11,42 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 import tempfile
 
-
 app = Flask("Google Login App")
-app.secret_key = "WarrantyMe"
+app.secret_key = "WarrantyMe.com"
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 SCOPES = ['https://www.googleapis.com/auth/drive']
 
 # SERVICE_ACCOUNT_FILE = 'service_account.json'
-SERVICE_ACCOUNT_FILE=os.getenv("GOOGLE_CLIENT_ID")
 
-GOOGLE_CLIENT_ID = os.getenv("SERVICE_ACCOUNT_JSON")
-
-# client_secrets_file = os.path.join(pathlib.Path(__file__).parent, "client_secret.json")
-client_secrets_file=os.getenv("GOOGLE_CLIENT_SECRET")
-
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 REDIRECT_URI = os.getenv("REDIRECT_URI")
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+# client_secrets_file = os.path.join(pathlib.Path(__file__).parent, "client_secret.json")
+# flow = Flow.from_client_secrets_file(
+#     client_secrets_file=client_secrets_file,
+#     scopes=["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email", "openid"],
+#     redirect_uri= REDIRECT_URI
+# )
 
 def create_flow():
-    print("GOOGLE_CLIENT_ID:", os.getenv("GOOGLE_CLIENT_ID"))
-    print("GOOGLE_CLIENT_SECRET:", os.getenv("GOOGLE_CLIENT_SECRET"))
+    redirect_uri = os.getenv("REDIRECT_URI") #load redirect uri
     flow = Flow.from_client_config(
         client_config={
             "web": {
                 "client_id": GOOGLE_CLIENT_ID,
-                "client_secret": client_secrets_file,
+                "client_secret": GOOGLE_CLIENT_SECRET,
                 "auth_uri": "https://accounts.google.com/o/oauth2/auth",
                 "token_uri": "https://oauth2.googleapis.com/token",
                 "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs"
             }
         },
         scopes=["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email", "openid"],
-        redirect_uri=REDIRECT_URI
+        redirect_uri=redirect_uri
     )
     return flow
 
-flow = create_flow() #use the create_flow function.
-
+flow = create_flow()
 def login_is_required(function):
     def wrapper(*args, **kwargs):
         if "google_id" not in session:
@@ -109,7 +108,20 @@ def protected_area():
     return render_template("index.html")
 
 def authenticate_service_account():
-    creds = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+    service_account_info = {
+        "type": "service_account",
+        "project_id": "warrantyme-project",
+        "private_key_id": os.getenv("SERVICE_ACCOUNT_PRIVATE_KEY_ID"),
+        "private_key": os.getenv("SERVICE_ACCOUNT_PRIVATE_KEY"),
+        "client_email": "warrantyme@warrantyme-project.iam.gserviceaccount.com",
+        "client_id": os.getenv("SERVICE_ACCOUNT_CLIENT_ID"),
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+        "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/warrantyme%40warrantyme-project.iam.gserviceaccount.com",
+        "universe_domain": "googleapis.com"
+    }
+    creds = service_account.Credentials.from_service_account_info(service_account_info, scopes=SCOPES)
     return creds
 
 @app.route('/save_text', methods=['POST'])
